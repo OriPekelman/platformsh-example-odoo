@@ -1,0 +1,42 @@
+# This file describes an application. You can have multiple applications
+# in the same project.
+#
+# See https://docs.platform.sh/user_guide/reference/platform-app-yaml.html
+
+# The name of this app. Must be unique within a project.
+name: 'app'
+
+# The runtime the application uses.
+type: 'python:2.7'
+
+# The build-time dependencies of the app.
+dependencies:
+    python:
+        uwsgi: '*'
+    nodejs:
+        less: '*'
+hooks:
+    build: |
+      pip install -r requirements.txt
+      make
+relationships:
+    database: "postgresql:postgresql"
+# The configuration of app when it is exposed to the web.
+web:
+    # Commands are run once after deployment to start the application process.
+    commands:
+       start: "python odoo-bin --database main -w main -r main --addons-path=addons --db_host=database.internal --db_port=5432 --xmlrpc-port=8888"
+    locations:
+        # The folder from which to serve static assets, for this location.
+        #
+        # This is a filesystem path, relative to the application root.
+        "/":
+            root: "public"
+            passthru: true
+            expires: 1h
+
+# The size of the persistent disk of the application (in MB).
+disk: 512
+mounts:
+   "/.local": "shared:files/local"
+  
